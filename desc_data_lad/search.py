@@ -1,5 +1,5 @@
 import datalad
 
 
-def search(code=None, creator=None, project=None):
+def search(code=None, creator=None, project=None, creation=None):
     pass

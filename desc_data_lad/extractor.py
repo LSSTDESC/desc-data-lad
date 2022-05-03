@@ -5,7 +5,6 @@ from datalad.log import log_progress
 
 from datalad.metadata.extractors.base import BaseMetadataExtractor
 from datalad.support.exceptions import CapturedException
-import desc_provenance
 import h5py
 
 

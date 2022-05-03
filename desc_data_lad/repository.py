@@ -5,10 +5,15 @@ import os
 
 # Test URL - update later
 NERSC_ROOT_DIR = "/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/datalad/root2"
-NERSC_GIT_ANNEX_PATH = "/global/cfs/cdirs/desc-wl/users/zuntz/datalad/conda/bin/git-annex-shell"
+NERSC_CONDA_DIR = "/global/cfs/cdirs/desc-wl/users/zuntz/datalad/conda/"
+NERSC_GIT_ANNEX_PATH = os.path.join(NERSC_CONDA_DIR, "/bin/git-annex-shell")
 
 def create_local_repository(path):
     return Repository.create(path)
+
+def running_on_nersc():
+    return "NERSC_HOST" in os.environ
+
 
 def get_system_desc_root():
     env_var = os.environ.get("DESC_DATA_ROOT")
@@ -16,7 +21,7 @@ def get_system_desc_root():
     if env_var is not None:
         return env_var
 
-    if "NERSC_HOST" in os.environ:
+    if running_on_nersc():
         return NERSC_ROOT_DIR
 
 
@@ -27,23 +32,15 @@ def get_system_desc_root():
     pass
 
 
-def configure_git_annex(d):
-    if isinstance(d, str):
-        d = datalad.api.Dataset(d)
-    # We need to tell our repos where they can fin
-    d.configuration('set', [
-        ('remote.origin.annex-shell', NERSC_GIT_ANNEX_PATH),
-        ('remote.origin.annex-ignore', 'false')
-    ], recursive=True)    
 
 def get_nersc_project_repository(project_id):
     # should fail if not running on NERSC
-    pass
+    if not running_on_nersc():
+        raise RuntimeError("get_nersc_project_repository only works at NERSC. You want clone_project_repository.")
 
 def get_nersc_user_repository(username):
-    # get path for this at NERSC
-    # create user repo at NERSC if it doesn't exist
-    pass
+    if not running_on_nersc():
+        raise RuntimeError("get_nersc_user_repository only works at NERSC. You want clone_user_repository.")
 
 def clone_project_repository(project_id):
     pass
@@ -55,8 +52,8 @@ def clone_nersc_root_repository(nersc_username):
     uri = f"ssh://{nersc_username}@cori.nersc.gov:{NERSC_ROOT_DIR}"
     path = get_system_desc_root()
     d = datalad.api.clone(path=path, source=uri)
-    configure_git_annex(d)
     repo = Repository(d.path)
+    repo.configure_git_annex()
     repo.get_sub_repositories()
     return repo
 
@@ -71,9 +68,19 @@ class Repository:
         datalad.api.create(path=path, dataset=parent, description=description)
         return cls(path)
 
+    def configure_git_annex(self):
+        # We need to tell our repos where they can find git annex on the remote system
+        self._dataset.configuration('set', [
+            ('remote.origin.annex-shell', NERSC_GIT_ANNEX_PATH),
+            ('remote.origin.annex-ignore', 'false')
+        ], recursive=True)    
+
+
     def synchronize(self, recursive=True):
-        # datalad.api.update(dataset=self.path, recursive=recursive, how="merge")
         self._dataset.update(recursive=recursive, how="merge")
+
+    def push(self):
+        self._dataset.push()
 
     def create_subrepository(self, path, description=None):
         return self.create(path=path, parent=self.path, description=description)
@@ -82,16 +89,12 @@ class Repository:
         return os.path.join(self.path, path)
 
     def save(self, path, message=None):
-        path = os.path.join(self.path, path)
-        # datalad.api.save(path=path, dataset=self.path, message=message)
-
-    def add_file(self, path, message=None):
-        pass
+        path = self.get_path_for(path)
+        self._dataset.save(path=path, message=message)
 
     def get_file(self, path):
         path = self.get_path_for(path)
         print(f"Getting {path} in repo {self.path}")
-        # datalad.api.get(path=path, dataset=self.path)
         self._dataset.get(path=path)
         return path
 
@@ -100,17 +103,18 @@ class Repository:
         return Repository(path)
 
     def get_sub_repositories(self):
-        # sub_repos = datalad.api.subdatasets(dataset=self.path)
         sub_repos = self._dataset.subdatasets()
         print(f"Getting {len(sub_repos)} sub-repositories")
+        repos = []
         for sub in sub_repos:
-            d = self.get_file(sub['gitmodule_url'])
-            configure_git_annex(d)
+            d = self.get_sub_repository(sub['gitmodule_url'])
+            d.configure_git_annex()
+            repos.append(d)
+        return repos
 
     def get_state(self, path=None):
         if path is None:
-            # statuses = datalad.api.status(dataset=self.path)
-            status = self._dataset.status()
+            statuses = self._dataset.status()
 
             # Consider the repo as a whole to be modified if any files within
             # are not listed as clean
@@ -120,9 +124,7 @@ class Repository:
             return "clean"
         else:
             return self._dataset.status(path=path)[0]['status']
-            # return datalad.api.status(path=path, dataset=self.path)[0]['state']
     
     def unlock(self, path):
         return self._dataset.unlock(path=path)
-        # return datalad.api.unlock(path=path, dataset=self.path)
 

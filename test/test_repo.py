@@ -53,23 +53,18 @@ def test_nersc_root_clone():
             root = os.path.join(dirname, "root")
 
             # Check we can clone the central NERSC data repository
-            print("Testing we can clone NERSC root")
             os.environ["DESC_DATA_ROOT"] = root
             repo = ddl.clone_nersc_root_repository("zuntz")
             repo.synchronize()
             assert os.path.exists(root)
-            print(os.listdir(root))
 
             # Check we can download the readme file correctly
-            print("Testing we can download README file")
             readme_file = repo.get_file("README.txt")
             with open(readme_file) as f:
                 readme = f.read()
             assert readme.startswith("DESC Shared Data")
 
-            print("Testing for sub-repo access")
             user_repo = repo.get_sub_repository("users/zuntz")
-            print(os.listdir(user_repo.path))
             user_filename = user_repo.get_file("joe_test_file.txt")
 
             with open(user_filename) as f:
