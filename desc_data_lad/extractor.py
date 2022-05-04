@@ -1,6 +1,7 @@
 from os.path import join as opj
 import logging
-lgr = logging.getLogger('desc_data_lad.extractor')
+
+lgr = logging.getLogger("desc_data_lad.extractor")
 from datalad.log import log_progress
 
 from datalad.metadata.extractors.base import BaseMetadataExtractor
@@ -16,6 +17,7 @@ keys = [
     "uuid",
     "githead",
 ]
+
 
 def get_metadata_from_desc_file(filename):
     meta = {}
@@ -34,21 +36,19 @@ def get_metadata_from_desc_file(filename):
 
 
 class MetadataExtractor(BaseMetadataExtractor):
-
     def get_metadata(self, dataset, content):
         if not content:
             return {}, []
 
-
         log_progress(
             lgr.info,
-            'extractordesc',
-            'Start DESC metadata extraction from %s', self.ds,
+            "extractordesc",
+            "Start DESC metadata extraction from %s",
+            self.ds,
             total=len(self.paths),
-            label='desc metadata extraction',
-            unit=' Files',
+            label="desc metadata extraction",
+            unit=" Files",
         )
-
 
         content_meta = []
         for f in self.paths:
@@ -57,24 +57,29 @@ class MetadataExtractor(BaseMetadataExtractor):
 
             log_progress(
                 lgr.info,
-                'extractordesc',
-                'Extract DESC metadata from %s', f,
+                "extractordesc",
+                "Extract DESC metadata from %s",
+                f,
                 update=1,
-                increment=True)
+                increment=True,
+            )
             try:
                 meta = get_metadata_from_desc_file(f)
             except Exception as e:
-                lgr.debug("DESC metadata extractor failed to load %s: %s",
-                          f, CapturedException(e))
+                lgr.debug(
+                    "DESC metadata extractor failed to load %s: %s",
+                    f,
+                    CapturedException(e),
+                )
                 continue
 
             content_meta.append((f, meta))
 
         log_progress(
             lgr.info,
-            'extractordesc',
-            'Finished DESC metadata extraction from %s', self.ds
+            "extractordesc",
+            "Finished DESC metadata extraction from %s",
+            self.ds,
         )
 
         return None, content_meta
-

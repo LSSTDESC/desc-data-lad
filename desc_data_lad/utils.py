@@ -3,8 +3,17 @@ import subprocess
 import os
 import datalad.support.sshconnector
 
-def share_file_with_desc(local_path, user, new_file=True, project=None, subdir=None, message=None, testing=False):
-    """ Copy a stand-alone file to a DESC space.
+
+def share_file_with_desc(
+    local_path,
+    user,
+    new_file=True,
+    project=None,
+    subdir=None,
+    message=None,
+    testing=False,
+):
+    """Copy a stand-alone file to a DESC space.
 
     In general it's better to have a local Repository mirroring the
     main data store on NERSC, which you can do using the Repository
@@ -16,7 +25,7 @@ def share_file_with_desc(local_path, user, new_file=True, project=None, subdir=N
     This function copies your file into either your personal user-space
     on NERSC, or into a shared project space.
     """
- 
+
     # Find the NERSC directory this should go in
     if testing:
         remote_dir = "users/test"
@@ -60,6 +69,3 @@ def share_file_with_desc(local_path, user, new_file=True, project=None, subdir=N
 
         print(f"Saving {target_path} at NERSC")
         con(save_command)
-
-
-

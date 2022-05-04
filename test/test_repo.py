@@ -109,6 +109,7 @@ def test_share_file_with_desc():
         f.write(timestamp)
 
     ddl.share_file_with_desc(filename, user, testing=True, new_file=False)
+    os.remove(filename)
 
 def temp_test():
     os.environ["DESC_DATA_ROOT"] = "data/new-root"

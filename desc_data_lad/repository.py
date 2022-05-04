@@ -8,8 +8,10 @@ NERSC_ROOT_DIR = "/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/datala
 NERSC_CONDA_DIR = "/global/cfs/cdirs/desc-wl/users/zuntz/datalad/conda/"
 NERSC_GIT_ANNEX_PATH = os.path.join(NERSC_CONDA_DIR, "bin/git-annex-shell")
 
+
 def create_local_repository(path):
     return Repository.create(path)
+
 
 def running_on_nersc():
     return "NERSC_HOST" in os.environ
@@ -24,7 +26,6 @@ def get_system_desc_root():
     if running_on_nersc():
         return NERSC_ROOT_DIR
 
-
     # what should this do if you are not on a shared system?
     # just crash? use an environment variable?
     # use a ~/Library directory?
@@ -36,18 +37,25 @@ def get_system_desc_root():
 def get_nersc_project_repository(project_id):
     # should fail if not running on NERSC
     if not running_on_nersc():
-        raise RuntimeError("get_nersc_project_repository only works at NERSC. You want clone_project_repository.")
+        raise RuntimeError(
+            "get_nersc_project_repository only works at NERSC. You want clone_project_repository."
+        )
+
 
 def get_nersc_user_repository(username):
     if not running_on_nersc():
-        raise RuntimeError("get_nersc_user_repository only works at NERSC. You want clone_user_repository.")
+        raise RuntimeError(
+            "get_nersc_user_repository only works at NERSC. You want clone_user_repository."
+        )
 
 
 def clone_project_repository(project_id):
     pass
 
+
 def clone_user_repository(username):
     pass
+
 
 def clone_nersc_root_repository(nersc_username):
     uri = f"ssh://{nersc_username}@cori.nersc.gov:{NERSC_ROOT_DIR}"
@@ -76,6 +84,7 @@ class Repository:
     path: str
         The path to the directory on disc holding the data
     """
+
     def __init__(self, path):
         self.path = path
 
@@ -86,7 +95,7 @@ class Repository:
     @classmethod
     def create(cls, path, parent=None, description=None):
         """Create a new repository at the specified path.
-        
+
         This will not by synchronized to anything, so if you want
         to share data with DESC you probably want one of these functions instead:
         clone_user_repository, clone_project_repository
@@ -101,11 +110,14 @@ class Repository:
 
     def configure_git_annex(self):
         # We need to tell our repos where they can find git annex on the remote system
-        self._dataset.configuration('set', [
-            ('remote.origin.annex-shell', NERSC_GIT_ANNEX_PATH),
-            ('remote.origin.annex-ignore', 'false')
-        ], recursive=True)    
-
+        self._dataset.configuration(
+            "set",
+            [
+                ("remote.origin.annex-shell", NERSC_GIT_ANNEX_PATH),
+                ("remote.origin.annex-ignore", "false"),
+            ],
+            recursive=True,
+        )
 
     def pull(self, recursive=True):
         """
@@ -200,7 +212,7 @@ class Repository:
 
     def get_sub_repositories(self):
         sub_repos = self._dataset.subdatasets()
-        paths = [self.get_path_for(sub['gitmodule_url']) for sub in sub_repos]
+        paths = [self.get_path_for(sub["gitmodule_url"]) for sub in sub_repos]
         # Download the references but not all the data
         self._dataset.get(path=paths, get_data=False)
         repos = [Repository(p) for p in paths]
@@ -215,12 +227,11 @@ class Repository:
             # Consider the repo as a whole to be modified if any files within
             # are not listed as clean
             for s in statuses:
-                if s['state'] in ["modified", "untracked", "added", "deleted"]:
+                if s["state"] in ["modified", "untracked", "added", "deleted"]:
                     return "modified"
             return "clean"
         else:
-            return self._dataset.status(path=path)[0]['state']
-    
+            return self._dataset.status(path=path)[0]["state"]
+
     def unlock(self, path):
         return self._dataset.unlock(path=path)
-
