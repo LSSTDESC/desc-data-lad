@@ -111,16 +111,8 @@ def test_share_file_with_desc():
     ddl.share_file_with_desc(filename, user, testing=True, new_file=False)
     os.remove(filename)
 
-def temp_test():
-    os.environ["DESC_DATA_ROOT"] = "data/new-root"
-    user = get_test_user()
-    repo = ddl.clone_nersc_root_repository(user)
-    repo.pull()
-    repo.download_files("users/zuntz")
 
 if __name__ == '__main__':
-    # test_local_repo()
-    # test_nersc_root_clone()
-    # test_share_file_with_desc()
-
-    temp_test()
+    test_local_repo()
+    test_nersc_root_clone()
+    test_share_file_with_desc()
