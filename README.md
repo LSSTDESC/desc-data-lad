@@ -26,6 +26,7 @@ pip install -e .
 
 Suggested layout for the central root data repository:
 
+```
 root/users - for per-user files
 root/users/johndoe - for user with (NERSC) user name johndoe
 root/users/test - a test user anyone can commit to
@@ -33,6 +34,7 @@ root/projects - for per-project files
 root/projects/7 - for project number 7
 root/production/ - for centrally chosen "official" files
 root/dc2 - for DC2
+```
 
 ## TODO
 
