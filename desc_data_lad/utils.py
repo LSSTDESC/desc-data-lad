@@ -4,7 +4,7 @@ import os
 import datalad.support.sshconnector
 
 
-def share_file_with_desc(
+def upload_file_to_desc(
     local_path,
     user,
     new_file=True,

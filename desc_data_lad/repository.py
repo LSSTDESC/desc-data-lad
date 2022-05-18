@@ -100,8 +100,6 @@ class Repository:
         to share data with DESC you probably want one of these functions instead:
         clone_user_repository, clone_project_repository
 
-        Para
-
         """
         datalad.api.create(path=path, dataset=parent, description=description)
         repo = cls(path)

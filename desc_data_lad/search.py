@@ -1,7 +1,8 @@
 import datalad
 
 
-def search(code=None, creator=None, project=None, creation=None):
+def search(name=None, code=None, creator=None, project=None, creation=None):
+    # arguments should be test or maybe regular expressions?
     pass
 
 
